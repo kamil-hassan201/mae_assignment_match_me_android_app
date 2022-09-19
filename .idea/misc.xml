@@ -5,10 +5,14 @@
       <map>
         <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/drawable/circle.xml" value="0.255" />
         <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/drawable/ic_ball.xml" value="0.294" />
+        <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/drawable/ic_refresh.xml" value="0.255" />
         <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/layout/activity_main.xml" value="0.3484375" />
         <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/layout/circle.xml" value="0.3484375" />
+        <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/layout/create_game_fragment.xml" value="0.29635416666666664" />
+        <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/layout/game_option_view.xml" value="0.29635416666666664" />
         <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/layout/home_fragment.xml" value="0.264" />
         <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/layout/memory_card.xml" value="0.2" />
+        <entry key="..\:/Personal-projects/Mae_Assignment/match_me/app/src/main/res/menu/main_menu.xml" value="0.29635416666666664" />
       </map>
     </option>
   </component>

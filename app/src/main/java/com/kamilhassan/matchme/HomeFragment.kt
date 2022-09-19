@@ -1,15 +1,16 @@
 package com.kamilhassan.matchme
 
-import android.animation.ArgbEvaluator
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.util.Log
+import android.view.*
+import android.widget.RadioGroup
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -20,7 +21,6 @@ class HomeFragment: Fragment() {
 
     companion object {
         private const val TAG = "HomeFragment"
-        private const val CREATE_REQUEST_CODE = 9100
     }
 
     private lateinit var rvBoard: RecyclerView
@@ -46,6 +46,50 @@ class HomeFragment: Fragment() {
         createBoard()
         return homeView
     }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
+        (activity as AppCompatActivity).supportActionBar?.title = "Match Me"
+    }
+
+    // menu related code
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.main_menu, menu)
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.mb_refresh ->{
+                if(mainGame.getNumMoves() > 0 && !mainGame.hasWonGame()){
+                    showAlertDialog("Quit the current game?", null, View.OnClickListener {
+                        createBoard()
+                    })
+                }
+                else{
+                    createBoard()
+                }
+                return true
+            }
+            R.id.mb_createNewGame ->{
+                showBoardSizeDialog()
+                return true
+            }
+            R.id.mb_create_custom ->{
+                showCreateCustomDialog()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+
+
 
 
     // cutom functions
@@ -91,9 +135,6 @@ class HomeFragment: Fragment() {
         }
         if(mainGame.flipCard(position)){
             tvNumPairs.text = "${mainGame.num_pairs}/${boardSize.getNumPairs()}"
-//            val color = ArgbEvaluator().evaluate(mainGame.num_pairs/boardSize.getNumPairs().toFloat(), ContextCompat.getColor(this, R.color.progress_low),
-//                ContextCompat.getColor(this,R.color.progress_high) ) as Int
-//            tvNumPairs.setTextColor(color)
             if(mainGame.hasWonGame()){
                 Snackbar.make(clRoot, "You Won, Congratulations!", Snackbar.LENGTH_LONG).show()
             }
@@ -103,5 +144,61 @@ class HomeFragment: Fragment() {
 
         adapter.notifyDataSetChanged()
     }
+
+    // show custom modals
+    private fun showCreateCustomDialog() {
+        val boardSizeView = LayoutInflater.from(context).inflate(R.layout.game_option_view, null)
+        val radioGroupSize = boardSizeView.findViewById<RadioGroup>(R.id.rd_game_option_group)
+
+        showAlertDialog("Choose new custom game size!", boardSizeView, View.OnClickListener {
+            val desiredBoardSize = when(radioGroupSize.checkedRadioButtonId){
+                R.id.rb_easy -> BoardSize.EASY;
+                R.id.rb_medium -> BoardSize.MEDIUM;
+                else -> BoardSize.HARD
+            }
+
+            val bundle = Bundle()
+            bundle.putSerializable("boardSize", desiredBoardSize)
+
+            val createGame =  CreateGameFragment()
+            createGame.arguments = bundle
+
+            requireFragmentManager()!!.beginTransaction().replace(R.id.fragmentContainer, createGame).addToBackStack(null).commit()
+
+//            val intent = Intent(this, CreateGame::class.java)
+//            intent.putExtra(EXTRA_BOARD_SIZE, desiredBoardSize)
+//            startActivityForResult(intent, CREATE_REQUEST_CODE)
+
+        })
+    }
+
+    private fun showBoardSizeDialog() {
+        val boardSizeView = LayoutInflater.from(context).inflate(R.layout.game_option_view, null)
+        val radioGroupSize = boardSizeView.findViewById<RadioGroup>(R.id.rd_game_option_group)
+        when(boardSize){
+            BoardSize.EASY -> radioGroupSize.check(R.id.rb_easy);
+            BoardSize.MEDIUM -> radioGroupSize.check(R.id.rb_medium);
+            BoardSize.HARD -> radioGroupSize.check(R.id.rb_hard);
+        }
+        showAlertDialog("Choose new board size!", boardSizeView, View.OnClickListener {
+            boardSize = when(radioGroupSize.checkedRadioButtonId){
+                R.id.rb_easy -> BoardSize.EASY;
+                R.id.rb_medium -> BoardSize.MEDIUM;
+                else -> BoardSize.HARD
+            }
+            createBoard()
+        })
+    }
+
+    private fun showAlertDialog(title: String, view: View?, positiveClickListener: View.OnClickListener) {
+        AlertDialog.Builder(requireContext())
+            .setView(view)
+            .setTitle(title)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Ok"){_, _ ->
+                positiveClickListener.onClick(null)
+            }.show()
+    }
+
 
 }
