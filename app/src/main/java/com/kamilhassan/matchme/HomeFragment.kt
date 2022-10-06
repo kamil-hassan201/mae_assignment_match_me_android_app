@@ -14,8 +14,11 @@ import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.kamilhassan.matchme.models.BoardSize
 import com.kamilhassan.matchme.models.MainGame
+import com.kamilhassan.matchme.models.UserImageList
 
 class HomeFragment: Fragment() {
 
@@ -30,6 +33,9 @@ class HomeFragment: Fragment() {
     private lateinit var mainGame: MainGame
     private lateinit var adapter: GameBoardAdapter
     private var boardSize: BoardSize = BoardSize.EASY
+    private val db = Firebase.firestore
+    private var gameName: String? = null
+    private var customGameImages: List<String>? = null
 
 
     override fun onCreateView(
@@ -39,6 +45,22 @@ class HomeFragment: Fragment() {
     ): View? {
 
         val homeView = inflater.inflate(R.layout.home_fragment, container, false)
+
+        // checking if has bundle from new custom game
+
+        val bundle = this.arguments
+
+        if (bundle != null) {
+            val customGameName = bundle.get("gameName") as String
+            Log.i(TAG, gameName!!)
+            val fragment: Fragment? = requireFragmentManager().findFragmentByTag("prevHome")
+            if (fragment != null) {
+                val manager: FragmentManager = requireFragmentManager()
+                //manager.popBackStack(manager.getBackStackEntryAt(manager.getBackStackEntryCount()-1).getId(), FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            }
+            downloadGame(customGameName)
+        }
+
         rvBoard = homeView.findViewById(R.id.rvGameBoard)
         tvNumMoves = homeView.findViewById(R.id.tvNumMoves)
         tvNumPairs = homeView.findViewById(R.id.tvNumPairs)
@@ -47,8 +69,11 @@ class HomeFragment: Fragment() {
         return homeView
     }
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setHasOptionsMenu(true)
     }
 
@@ -92,7 +117,28 @@ class HomeFragment: Fragment() {
 
 
 
-    // cutom functions
+    // custom functions
+
+    private fun downloadGame(customGameName: String) {
+        db.collection("games").document(customGameName).get().addOnSuccessListener {document->
+            val userImageList: UserImageList? = document.toObject(UserImageList::class.java)
+            if(userImageList?.images == null){
+                Log.e(TAG, "Invalid data from firestore")
+                Snackbar.make(clRoot, "Sorry! no such game", Snackbar.LENGTH_LONG).show()
+                return@addOnSuccessListener
+            }
+
+            val numberCards = userImageList.images.size * 2
+            boardSize = BoardSize.getByValue(numberCards)
+            customGameImages = userImageList.images
+            gameName = customGameName
+
+            createBoard()
+        }.addOnFailureListener{exception->
+            Log.e(TAG, "Exception when retrieving game", exception)
+        }
+    }
+
     @SuppressLint("SetTextI18n")
     private fun createBoard() {
         when(boardSize){
@@ -110,7 +156,7 @@ class HomeFragment: Fragment() {
             }
         }
 
-        mainGame = MainGame(boardSize)
+        mainGame = MainGame(boardSize, customGameImages)
 
         // creating adapter and layout (Recycler view logic)
         adapter = GameBoardAdapter(requireContext(), boardSize, mainGame.cards, object:
@@ -145,6 +191,8 @@ class HomeFragment: Fragment() {
         adapter.notifyDataSetChanged()
     }
 
+
+
     // show custom modals
     private fun showCreateCustomDialog() {
         val boardSizeView = LayoutInflater.from(context).inflate(R.layout.game_option_view, null)
@@ -163,7 +211,7 @@ class HomeFragment: Fragment() {
             val createGame =  CreateGameFragment()
             createGame.arguments = bundle
 
-            requireFragmentManager()!!.beginTransaction().replace(R.id.fragmentContainer, createGame).addToBackStack(null).commit()
+            requireFragmentManager()!!.beginTransaction().replace(R.id.fragmentContainer, createGame, "prevHome").addToBackStack(null).commit()
 
 //            val intent = Intent(this, CreateGame::class.java)
 //            intent.putExtra(EXTRA_BOARD_SIZE, desiredBoardSize)

@@ -18,3 +18,4 @@ val DEFAULT_ICONS = listOf(
     )
 
 const val EXTRA_BOARD_SIZE = "EXTRA_BOARD_SIZE"
+const val EXTRA_GAME_NAME = "EXTRA_GAME_NAME"

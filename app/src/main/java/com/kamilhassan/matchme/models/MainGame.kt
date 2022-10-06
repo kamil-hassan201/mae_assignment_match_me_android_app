@@ -2,15 +2,22 @@ package com.kamilhassan.matchme.models
 
 import com.kamilhassan.matchme.utilities.DEFAULT_ICONS
 
-class MainGame(private val boardSize: BoardSize) {
+class MainGame(private val boardSize: BoardSize, private val customImages: List<String>?) {
     val cards: List<MemoryCard>
     var num_pairs = 0
     private var numCardFlips: Int = 0
     private var indexOfSingleSelectedCard: Int? = null
     init {
-        val choosen_icons = DEFAULT_ICONS.shuffled().take(boardSize.getNumPairs())
-        val randomized_icons = (choosen_icons + choosen_icons).shuffled()
-        cards = randomized_icons.map{MemoryCard(it)}
+        if(customImages == null){
+            val choosen_icons = DEFAULT_ICONS.shuffled().take(boardSize.getNumPairs())
+            val randomized_icons = (choosen_icons + choosen_icons).shuffled()
+            cards = randomized_icons.map{MemoryCard(it)}
+        }
+        else{
+            val randomizedImages = (customImages + customImages).shuffled()
+            cards = randomizedImages.map{ MemoryCard(it.hashCode(),it) }
+        }
+
     }
     fun flipCard(position: Int): Boolean {
         numCardFlips++

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "235080571199",
+    "project_id": "my-memory-c6651",
+    "storage_bucket": "my-memory-c6651.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235080571199:android:184ed19efe334c5ca25b8a",
+        "android_client_info": {
+          "package_name": "com.kamilhassan.matchme"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "235080571199-tfb1fvv2hhtcoqj4hlod218c4rq8c21p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfDDgAhAEq9szQYuASiQ_yX2bVywO6RS4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "235080571199-tfb1fvv2hhtcoqj4hlod218c4rq8c21p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
