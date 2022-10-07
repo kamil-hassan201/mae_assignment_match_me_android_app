@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.kamilhassan.matchme.models.BoardSize
 import com.kamilhassan.matchme.models.MemoryCard
+import com.squareup.picasso.Picasso
 import kotlin.math.min
 
 class GameBoardAdapter(
@@ -52,7 +53,16 @@ class GameBoardAdapter(
         val imageButton = itemView.findViewById<ImageButton>(R.id.imageButton)
         fun bind(position: Int) {
             val card = cards[position]
-            imageButton.setImageResource(if(card.isFaceUp) card.identifier else R.drawable.card_bg2)
+            if(card.isFaceUp){
+                if(card.imageUrl != null){
+                    Picasso.get().load(card.imageUrl).into(imageButton)
+                }else{
+                    imageButton.setImageResource(card.identifier)
+                }
+            }else{
+                imageButton.setImageResource(R.drawable.card_bg)
+            }
+
 
             // set pair colors
             imageButton.alpha = if(card.isMatched) 0.4f else 1.0f

@@ -254,11 +254,6 @@ class CreateGameFragment: Fragment(){
                 AlertDialog.Builder(requireContext())
                     .setTitle("Game uploaded! Let's play $gameName")
                     .setPositiveButton("OK") {_,_->
-//                        val resultData = Intent()
-//                        resultData.putExtra(EXTRA_GAME_NAME, gameName)
-//                        setResult(Activity.RESULT_OK, resultData)
-//                        finish()
-
                         // going back to home fragment
                         val bundle = Bundle()
                         bundle.putSerializable("gameName", gameName)

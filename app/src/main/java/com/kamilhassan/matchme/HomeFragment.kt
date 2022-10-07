@@ -1,9 +1,11 @@
 package com.kamilhassan.matchme
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.EditText
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -13,12 +15,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.jinatonic.confetti.CommonConfetti
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kamilhassan.matchme.models.BoardSize
 import com.kamilhassan.matchme.models.MainGame
 import com.kamilhassan.matchme.models.UserImageList
+import com.squareup.picasso.Picasso
 
 class HomeFragment: Fragment() {
 
@@ -52,7 +56,7 @@ class HomeFragment: Fragment() {
 
         if (bundle != null) {
             val customGameName = bundle.get("gameName") as String
-            Log.i(TAG, gameName!!)
+            gameName = customGameName
             val fragment: Fragment? = requireFragmentManager().findFragmentByTag("prevHome")
             if (fragment != null) {
                 val manager: FragmentManager = requireFragmentManager()
@@ -80,7 +84,8 @@ class HomeFragment: Fragment() {
     override fun onResume() {
         super.onResume()
         (activity as AppCompatActivity).supportActionBar?.setDisplayHomeAsUpEnabled(false)
-        (activity as AppCompatActivity).supportActionBar?.title = "Match Me"
+
+        (activity as AppCompatActivity).supportActionBar?.title = if (gameName == null) "Match Me" else gameName
     }
 
     // menu related code
@@ -109,15 +114,27 @@ class HomeFragment: Fragment() {
                 showCreateCustomDialog()
                 return true
             }
+            R.id.mi_playcustom ->{
+                showCustomGameDialog()
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
 
-
-
-
     // custom functions
+
+    private fun showCustomGameDialog() {
+        val customDownloadView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_game_download, null)
+        showAlertDialog("Fetch memory game", customDownloadView, View.OnClickListener {
+            val etDownloadGame = customDownloadView.findViewById<EditText>(R.id.et_downloadGame)
+            val gameToDownload = etDownloadGame.text.toString().trim()
+            downloadGame(gameToDownload)
+        })
+
+    }
+
+
 
     private fun downloadGame(customGameName: String) {
         db.collection("games").document(customGameName).get().addOnSuccessListener {document->
@@ -134,6 +151,16 @@ class HomeFragment: Fragment() {
             gameName = customGameName
 
             createBoard()
+
+            // pre fetch images
+            for (imageUrl in userImageList.images){
+                Picasso.get().load(imageUrl).fetch()
+            }
+
+            Snackbar.make(clRoot, "Now playing: $gameName", Snackbar.LENGTH_LONG).show()
+
+            (activity as AppCompatActivity).supportActionBar?.title = if (gameName == null) "Match Me" else gameName
+
         }.addOnFailureListener{exception->
             Log.e(TAG, "Exception when retrieving game", exception)
         }
@@ -141,6 +168,7 @@ class HomeFragment: Fragment() {
 
     @SuppressLint("SetTextI18n")
     private fun createBoard() {
+
         when(boardSize){
             BoardSize.EASY -> {
                 tvNumMoves.text = "0"
@@ -183,6 +211,7 @@ class HomeFragment: Fragment() {
             tvNumPairs.text = "${mainGame.num_pairs}/${boardSize.getNumPairs()}"
             if(mainGame.hasWonGame()){
                 Snackbar.make(clRoot, "You Won, Congratulations!", Snackbar.LENGTH_LONG).show()
+                CommonConfetti.rainingConfetti(clRoot, intArrayOf(Color.GREEN, Color.MAGENTA, Color.RED)).oneShot()
             }
         }
 
@@ -213,10 +242,6 @@ class HomeFragment: Fragment() {
 
             requireFragmentManager()!!.beginTransaction().replace(R.id.fragmentContainer, createGame, "prevHome").addToBackStack(null).commit()
 
-//            val intent = Intent(this, CreateGame::class.java)
-//            intent.putExtra(EXTRA_BOARD_SIZE, desiredBoardSize)
-//            startActivityForResult(intent, CREATE_REQUEST_CODE)
-
         })
     }
 
@@ -234,6 +259,8 @@ class HomeFragment: Fragment() {
                 R.id.rb_medium -> BoardSize.MEDIUM;
                 else -> BoardSize.HARD
             }
+            gameName = null
+            customGameImages = null
             createBoard()
         })
     }
